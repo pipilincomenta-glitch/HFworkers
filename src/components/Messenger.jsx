@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Send, Search, Phone, Video, MoreVertical, Circle, Paperclip, Smile, Check, CheckCheck, Info, UserPlus, ChevronLeft, Loader2, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const Messenger = ({ initialUserId, clearInitialUser }) => {
+const Messenger = ({ initialUserId, clearInitialUser, lang = 'es' }) => {
+  const t = {
+    es: { title: 'Mensajes Directos', searchPh: 'Buscar contactos...', messagePh: 'Escribe un mensaje...', online: 'En línea', clearHistory: 'Borrar Historial', chat: 'Chat', noName: 'Sin Nombre' },
+    en: { title: 'Direct Messages', searchPh: 'Search contacts...', messagePh: 'Type a message...', online: 'Online', clearHistory: 'Clear History', chat: 'Chat', noName: 'No Name' },
+    fr: { title: 'Messages Directs', searchPh: 'Rechercher contacts...', messagePh: 'Écrivez un message...', online: 'En ligne', clearHistory: 'Supprimer l\'historique', chat: 'Chat', noName: 'Sans Nom' }
+  }[lang];
+
   const [activeChat, setActiveChat] = useState(null)
   const [message, setMessage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -139,13 +145,22 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
     setShowMobileChat(true)
   }
 
+  const getLocaleForLang = (langCode) => {
+    switch (langCode) {
+      case 'es': return 'es-ES';
+      case 'fr': return 'fr-FR';
+      case 'en':
+      default: return 'en-US';
+    }
+  };
+
   return (
     <div className="messenger-container" style={{ animation: 'fadeIn 0.6s ease', height: 'calc(100vh - 120px)', display: 'flex', background: 'var(--glass-bg)', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--glass-border)', backdropFilter: 'blur(40px)' }}>
       {/* Sidebar */}
       <aside className={`messenger-sidebar ${showMobileChat ? 'mobile-hidden' : ''}`} style={{ width: '350px', background: 'rgba(0,0,0,0.3)', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '30px 25px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-            <h2 className="display" style={{ fontSize: '24px', margin: 0 }}>Mensajes</h2>
+            <h2 className="display" style={{ fontSize: '22px', margin: 0 }}>{t.title}</h2>
             <div style={{ background: 'var(--primary)', color: 'var(--bg)', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <UserPlus size={16} />
             </div>
@@ -154,7 +169,7 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
             <input 
               type="text" 
-              placeholder="Buscar contactos..." 
+              placeholder={t.searchPh} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ width: '100%', padding: '12px 12px 12px 40px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: 'white', fontSize: '14px', outline: 'none', transition: '0.3s' }}
@@ -193,10 +208,10 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
               </div>
               <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontWeight: '700', fontSize: '15px', color: activeChat === chat.id ? 'var(--primary)' : 'var(--text)' }}>{chat.full_name || 'Sin Nombre'}</span>
+                  <span style={{ fontWeight: '700', fontSize: '15px', color: activeChat === chat.id ? 'var(--primary)' : 'var(--text)' }}>{chat.full_name || t.noName}</span>
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{chat.role}</span>
                 </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }}>En línea</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }}>{t.online}</p>
               </div>
             </div>
           ))}
@@ -215,9 +230,9 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
                {activeContact?.full_name ? activeContact.full_name.substring(0, 2).toUpperCase() : '??'}
              </div>
              <div>
-               <div style={{ fontWeight: '800', fontSize: '16px' }}>{activeContact?.full_name || 'Chat'}</div>
+               <div style={{ fontWeight: '800', fontSize: '16px' }}>{activeContact?.full_name || t.chat}</div>
                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#4ade80', fontWeight: '600' }}>
-                 <Circle size={8} fill="currentColor" /> En línea
+                 <Circle size={8} fill="currentColor" /> {t.online}
                </div>
              </div>
           </div>
@@ -238,7 +253,6 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
                     borderRadius: '12px',
                     padding: '8px',
                     zIndex: 1000,
-                    width: '180px',
                     boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                     backdropFilter: 'blur(20px)'
                   }}>
@@ -262,7 +276,7 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
                       className="menu-item-hover"
                     >
                       <Trash2 size={16} />
-                      Borrar Historial
+                      {t.clearHistory}
                     </button>
                   </div>
                 )}
@@ -294,7 +308,7 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
                 {msg.content}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '6px' }}>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '600' }}>{new Date(msg.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '600' }}>{new Date(msg.created_at).toLocaleTimeString(getLocaleForLang(lang), { hour: '2-digit', minute: '2-digit' })}</span>
                 {msg.sender_id === currentUser?.id && (
                   <CheckCheck size={12} color="#4ade80" />
                 )}
@@ -364,7 +378,7 @@ const Messenger = ({ initialUserId, clearInitialUser }) => {
                 type="text" 
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Escribe un mensaje..."
+                placeholder={t.messagePh}
                 style={{ width: '100%', padding: '15px 20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '18px', color: 'white', fontSize: '14.5px', outline: 'none', transition: '0.3s' }}
               />
             </div>

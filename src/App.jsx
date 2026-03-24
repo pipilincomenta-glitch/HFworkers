@@ -28,12 +28,13 @@ import Messenger from './components/Messenger'
 import Config from './components/Config'
 import Login from './components/Login'
 import { supabase } from './lib/supabase'
-import LogoHF from './logopngHF.png'
+import LogoDark from './logopngHF.png'
+import LogoWhite from './logoblancohf.png'
 
 function App() {
   const [session, setSession] = useState(null)
+  const [lang, setLang] = useState('es')
   const [currentView, setCurrentView] = useState(window.innerWidth > 1023 ? 'dashboard' : 'home')
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }))
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,13 +45,8 @@ function App() {
       setSession(session)
     })
 
-    const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }))
-    }, 60000)
-
     return () => {
       subscription.unsubscribe()
-      clearInterval(timer)
     }
   }, [])
 
@@ -61,9 +57,31 @@ function App() {
   
   // Settings State
   const [theme, setTheme] = useState('dark')
-  const [lang, setLang] = useState('es')
   const [guiSize, setGuiSize] = useState('default')
   const [compactMode, setCompactMode] = useState(false)
+  
+  const translations = {
+    es: { 
+      portal: 'Portal Editorial', welcome: 'Bienvenido de nuevo al ecosistema de gestión HFworkers',
+      upcoming: 'Próximas Tareas', pending: 'Pendientes', received: 'Recibidos', 
+      settings: 'Configuración', logout: 'Cerrar Sesión', adjusts: 'Ajustes',
+      nav: { dashboard: 'Dashboard', tasks: 'Tareas', investments: 'Inversiones', payments: 'Pagos', hours: 'Horas', teams: 'Equipo' }
+    },
+    en: { 
+      portal: 'Editorial Portal', welcome: 'Welcome back to the HFworkers management ecosystem',
+      upcoming: 'Upcoming Tasks', pending: 'Pending', received: 'Received', 
+      settings: 'Settings', logout: 'Sign Out', adjusts: 'Settings',
+      nav: { dashboard: 'Dashboard', tasks: 'Tasks', investments: 'Investments', payments: 'Payments', hours: 'Hours', teams: 'Teams' }
+    },
+    fr: { 
+      portal: 'Portail Éditorial', welcome: 'Bienvenue dans l\'écosystème de gestion HFworkers',
+      upcoming: 'Tâches à Venir', pending: 'En attente', received: 'Reçus', 
+      settings: 'Configuration', logout: 'Déconnexion', adjusts: 'Réglages',
+      nav: { dashboard: 'Tableau de bord', tasks: 'Tâches', investments: 'Investissements', payments: 'Paiements', hours: 'Heures', teams: 'Équipe' }
+    }
+  };
+  const t = translations[lang] || translations.en;
+
   const [counts, setCounts] = useState({ tasks: 0, messages: 0 })
   const [messengerUserId, setMessengerUserId] = useState(null)
 
@@ -181,14 +199,16 @@ function App() {
     root.style.zoom = scale;
 
   }, [theme, guiSize]);
+  
+  const currentLogo = (theme === 'dark' || theme === 'glass-midnight' || theme === 'glass-emerald') ? LogoWhite : LogoDark;
 
   const apps = [
-    { id: 'dashboard', name: lang === 'es' ? 'Dashboard' : lang === 'en' ? 'Dashboard' : 'Tableau de bord', icon: <LayoutDashboard size={28} /> },
-    { id: 'tasks', name: lang === 'es' ? 'Tareas' : lang === 'en' ? 'Tasks' : 'Tâches', icon: <CheckSquare size={28} /> },
-    { id: 'investments', name: lang === 'es' ? 'Inversiones' : lang === 'en' ? 'Investments' : 'Investissements', icon: <Database size={28} /> },
-    { id: 'payments', name: lang === 'es' ? 'Pagos' : lang === 'en' ? 'Payments' : 'Paiements', icon: <Wallet size={28} /> },
-    { id: 'hours', name: lang === 'es' ? 'Horas' : lang === 'en' ? 'Hours' : 'Heures', icon: <Clock size={28} /> },
-    { id: 'teams', name: lang === 'es' ? 'Equipo' : lang === 'en' ? 'Teams' : 'Équipe', icon: <Users size={28} /> },
+    { id: 'dashboard', name: t.nav.dashboard, icon: <LayoutDashboard size={28} /> },
+    { id: 'tasks', name: t.nav.tasks, icon: <CheckSquare size={28} /> },
+    { id: 'investments', name: t.nav.investments, icon: <Database size={28} /> },
+    { id: 'payments', name: t.nav.payments, icon: <Wallet size={28} /> },
+    { id: 'hours', name: t.nav.hours, icon: <Clock size={28} /> },
+    { id: 'teams', name: t.nav.teams, icon: <Users size={28} /> },
     { id: 'messenger', name: 'Messenger', icon: <MessageSquare size={28} /> },
   ]
 
@@ -196,12 +216,12 @@ function App() {
     if (currentView === 'home') return null;
 
     switch (currentView) {
-      case 'tasks': return <TaskBoard />
-      case 'investments': return <InvestmentDB />
-      case 'hours': return <HoursTracker />
-      case 'teams': return <Teams onChat={handleOpenChat} />
-      case 'payments': return <Payments />
-      case 'messenger': return <Messenger initialUserId={messengerUserId} clearInitialUser={() => setMessengerUserId(null)} />
+      case 'tasks': return <TaskBoard lang={lang} />
+      case 'investments': return <InvestmentDB lang={lang} />
+      case 'hours': return <HoursTracker lang={lang} />
+      case 'teams': return <Teams onChat={handleOpenChat} lang={lang} />
+      case 'payments': return <Payments lang={lang} />
+      case 'messenger': return <Messenger initialUserId={messengerUserId} clearInitialUser={() => setMessengerUserId(null)} lang={lang} />
       case 'settings': return <Config 
           theme={theme} setTheme={handleSetTheme} 
           lang={lang} setLang={handleSetLang} 
@@ -215,15 +235,15 @@ function App() {
           <div className="dashboard-view" style={{ animation: 'fadeIn 0.5s ease' }}>
             <header className="portal-header" style={{ marginBottom: '60px' }}>
               <div className="portal-title">
-                <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{lang === 'es' ? 'Portal Editorial' : lang === 'en' ? 'Editorial Portal' : 'Portail Éditorial'}</h1>
-                <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{lang === 'es' ? 'Bienvenido de nuevo al ecosistema de gestión HFworkers' : lang === 'en' ? 'Welcome back to the HFworkers management ecosystem' : 'Bienvenue dans l\'écosystème de gestion HFworkers'}</p>
+                <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{t.portal}</h1>
+                <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{t.welcome}</p>
               </div>
             </header>
 
             <div className="dashboard-grid">
               {[
-                { id: 'tasks', icon: <CheckSquare size={20} />, label: lang === 'es' ? 'Próximas Tareas' : lang === 'en' ? 'Upcoming Tasks' : 'Tâches à Venir', val: counts.tasks.toString(), sub: lang === 'es' ? 'Pendientes' : 'Pending' },
-                { id: 'messenger', icon: <MessageSquare size={20} />, label: 'Messenger', val: counts.messages.toString(), sub: lang === 'es' ? 'Recibidos' : 'Received' }
+                { id: 'tasks', icon: <CheckSquare size={20} />, label: t.upcoming, val: counts.tasks.toString(), sub: t.pending },
+                { id: 'messenger', icon: <MessageSquare size={20} />, label: 'Messenger', val: counts.messages.toString(), sub: t.received }
               ].map(card => (
                 <div key={card.id} className="card" onClick={() => setCurrentView(card.id)} style={{ cursor: 'pointer', padding: compactMode ? '20px' : '30px' }}>
                   <div className="card-header" style={{ marginBottom: '15px' }}>
@@ -246,24 +266,11 @@ function App() {
 
   return (
     <div className="ios-container">
-      <div className="status-bar">
-        <span style={{ letterSpacing: '-0.5px' }}>{currentTime}</span>
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '1px' }}>
-             {[1,2,3,4].map(i => <div key={i} style={{ width: '3px', height: i*2+4, background: i === 4 ? 'rgba(255,255,255,0.3)' : 'white', borderRadius: '1px' }} />)}
-          </div>
-          <span style={{ fontSize: '12px' }}>5G</span>
-          <div style={{ width: '22px', height: '11px', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '3px', padding: '1px', position: 'relative' }}>
-             <div style={{ width: '80%', height: '100%', background: 'white', borderRadius: '1px' }} />
-             <div style={{ position: 'absolute', right: '-3px', top: '3px', width: '2px', height: '4px', background: 'rgba(255,255,255,0.5)', borderRadius: '0 1px 1px 0' }} />
-          </div>
-        </div>
-      </div>
 
       {/* Sidebar for Desktop */}
       <aside className="sidebar">
-        <div className="sidebar-logo" onClick={() => setCurrentView('dashboard')} style={{ cursor: 'pointer', padding: '20px 0', marginBottom: '45px', textAlign: 'center' }}>
-          <img src={LogoHF} alt="HFworkers" style={{ height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 0 15px rgba(255,255,255,0.05))' }} />
+        <div className="sidebar-logo" onClick={goHome} style={{ cursor: 'pointer', padding: '20px 0', marginBottom: '45px', textAlign: 'center' }}>
+          <img src={currentLogo} alt="HFworkers" style={{ height: '70px', objectFit: 'contain', filter: theme === 'light' ? 'none' : 'drop-shadow(0 0 15px rgba(255,255,255,0.1))' }} />
         </div>
         <nav style={{ flex: 1 }}>
           {apps.map((app, i) => (
@@ -275,11 +282,11 @@ function App() {
         </nav>
         <div className={`nav-item ${currentView === 'settings' ? 'active' : ''}`} onClick={() => setCurrentView('settings')}>
           <Settings size={20} />
-          <span>{lang === 'es' ? 'Configuración' : lang === 'en' ? 'Settings' : 'Configuration'}</span>
+          <span>{t.settings}</span>
         </div>
         <div className="nav-item" onClick={handleLogout} style={{ marginTop: '10px', color: '#f87171' }}>
           <LogOut size={20} />
-          <span>{lang === 'es' ? 'Cerrar Sesión' : lang === 'en' ? 'Sign Out' : 'Déconnexion'}</span>
+          <span>{t.logout}</span>
         </div>
       </aside>
 
@@ -295,9 +302,9 @@ function App() {
                 <span>Home</span>
               </button>
               <div className="mobile-view-title display">
-                {currentView === 'settings' ? (lang === 'es' ? 'Configuración' : 'Settings') : apps.find(a => a.id === currentView)?.name || ''}
+                {currentView === 'home' ? '' : currentView === 'settings' ? t.settings : apps.find(a => a.id === currentView)?.name || ''}
               </div>
-              <button className="header-action-btn" onClick={goHome}>
+             <button className="header-action-btn" onClick={goHome}>
                 <Home size={20} />
               </button>
            </div>
@@ -323,7 +330,7 @@ function App() {
               <div className="app-icon" style={{ background: 'linear-gradient(135deg, #8e8e93 0%, #3a3a3c 100%)' }}>
                 <Settings size={32} />
               </div>
-              <span className="app-label">{lang === 'es' ? 'Ajustes' : 'Settings'}</span>
+              <span className="app-label">{t.adjusts}</span>
             </div>
           </div>
           

@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { Calendar, BarChart, Trash2, Edit3, Save, X, Check, Plus, Clock, Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const HoursTracker = () => {
+const HoursTracker = ({ lang = 'es' }) => {
+  const t = {
+    es: { title: 'Reporte de Horas', subtitle: 'Gestiona y visualiza tus horas de trabajo personalizadas', newSession: 'Reportar Horas', project: 'Proyecto / Tarea', duration: 'Duración', date: 'Fecha', status: 'Estado', actions: 'Acciones', total: 'Total de Horas', modalTitle: 'Reportar Horas', modalProject: 'Nombre de Tarea / Proyecto', modalProjectPh: 'Ej. Análisis de Mercado...', modalHours: 'Horas', modalMins: 'Minutos', save: 'Guardar Sesión', cancel: 'Cancelar', error: 'Error al guardar sesión: ', genSession: 'Sesión General' },
+    en: { title: 'Hours Report', subtitle: 'Manage and visualize your custom work hours', newSession: 'Report Hours', project: 'Project / Task', duration: 'Duration', date: 'Date', status: 'Status', actions: 'Actions', total: 'Total Hours', modalTitle: 'Report Hours', modalProject: 'Task / Project Name', modalProjectPh: 'e.g. Market Analysis...', modalHours: 'Hours', modalMins: 'Minutes', save: 'Save Session', cancel: 'Cancel', error: 'Error saving session: ', genSession: 'General Session' },
+    fr: { title: 'Rapport d\'Heures', subtitle: 'Gérez et visualisez vos heures de travail personnalisées', newSession: 'Déclarer Heures', project: 'Projet / Tâche', duration: 'Durée', date: 'Date', status: 'Statut', actions: 'Actions', total: 'Heures Totales', modalTitle: 'Déclarer Heures', modalProject: 'Nom de la Tâche / Projet', modalProjectPh: 'ex. Analyse de Marché...', modalHours: 'Heures', modalMins: 'Minutes', save: 'Enregistrer Session', cancel: 'Annuler', error: 'Erreur lors de l\'enregistrement : ', genSession: 'Session Générale' }
+  }[lang];
+
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -58,7 +64,7 @@ const HoursTracker = () => {
       const { data, error } = await supabase
         .from('work_logs')
         .insert({
-          project: sessionName.trim().slice(0, 100) || 'Sesión General',
+          project: sessionName.trim().slice(0, 100) || t.genSession,
           duration: `${h}h ${m}m`,
           status: 'Pending',
           user_id: user.id
@@ -72,7 +78,7 @@ const HoursTracker = () => {
       setSessionHours('')
       setSessionMins('')
     } catch (err) {
-      alert('Error al guardar sesión: ' + err.message)
+      alert(t.error + err.message)
     }
   }
 
@@ -114,16 +120,16 @@ const HoursTracker = () => {
     <div style={{ animation: 'fadeIn 0.6s ease', position: 'relative' }}>
       <header className="portal-header" style={{ marginBottom: '60px' }}>
         <div className="portal-title">
-          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>Registro de Horas</h1>
-          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>Reporte manual de actividades y control de tiempo HFworkers</p>
+          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{t.title}</h1>
+          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{t.subtitle}</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="nav-item" 
-          style={{ background: 'var(--primary)', color: 'var(--bg)', padding: '12px 24px', border: 'none', cursor: 'pointer' }}
+          style={{ background: 'var(--primary)', color: 'var(--bg)', padding: '12px 24px', border: 'none', cursor: 'pointer', borderRadius: '12px' }}
         >
           <Plus size={18} />
-          <span style={{ fontWeight: '700' }}>Registrar Horas</span>
+          <span style={{ fontWeight: '700' }}>{t.newSession}</span>
         </button>
       </header>
 
@@ -135,19 +141,19 @@ const HoursTracker = () => {
         <>
           <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
         <div className="card">
-          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>MES ACTUAL</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>{lang === 'es' ? 'MES ACTUAL' : lang === 'en' ? 'CURRENT MONTH' : 'MOIS ACTUEL'}</div>
           <div style={{ fontSize: '24px', fontWeight: '800' }}>164h</div>
           <p style={{ color: '#4ade80', fontSize: '13px', marginTop: '5px' }}>+12% vs feb</p>
         </div>
 
         <div className="card">
-          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>ESTA SEMANA</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>{lang === 'es' ? 'ESTA SEMANA' : lang === 'en' ? 'THIS WEEK' : 'CETTE SEMAINE'}</div>
           <div style={{ fontSize: '24px', fontWeight: '800' }}>32h 15m</div>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '5px' }}>Meta: 40h</p>
         </div>
 
         <div className="card">
-          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>OBJETIVO MENSUAL</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>{lang === 'es' ? 'OBJETIVO MENSUAL' : lang === 'en' ? 'MONTHLY GOAL' : 'OBJECTIF MENSUEL'}</div>
           <div style={{ fontSize: '24px', fontWeight: '800' }}>180h</div>
           <div style={{ width: '100%', height: '4px', background: 'var(--surface)', borderRadius: '2px', marginTop: '15px' }}>
              <div style={{ width: '91%', height: '100%', background: 'var(--primary)', borderRadius: '2px' }} />
@@ -197,7 +203,7 @@ const HoursTracker = () => {
                         <Edit3 size={12} />
                       </button>
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(item.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(item.created_at).toLocaleDateString(lang === 'es' ? 'es-ES' : lang === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short' })}</div>
                   </>
                 )}
               </div>
@@ -243,19 +249,19 @@ const HoursTracker = () => {
         }}>
           <div className="card" style={{ width: '450px', padding: '40px', border: '1px solid var(--glass-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-               <h2 className="display" style={{ fontSize: '24px' }}>Reportar Horas</h2>
+               <h2 className="display" style={{ fontSize: '24px' }}>{t.modalTitle}</h2>
                <X size={24} style={{ cursor: 'pointer' }} onClick={() => setIsModalOpen(false)} />
             </div>
             
             <form onSubmit={handleSaveSession}>
               <div style={{ marginBottom: '25px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>Nombre de Tarea / Proyecto</label>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>{t.modalProject}</label>
                 <input 
                   autoFocus
                   type="text" 
                   value={sessionName}
                   onChange={(e) => setSessionName(e.target.value)}
-                  placeholder="Ej. Análisis de Mercado..."
+                  placeholder={t.modalProjectPh}
                   style={{
                     width: '100%',
                     background: 'var(--glass-bg)',
@@ -271,7 +277,7 @@ const HoursTracker = () => {
 
               <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>Horas</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>{t.modalHours}</label>
                   <input 
                     type="number" 
                     value={sessionHours}
@@ -290,7 +296,7 @@ const HoursTracker = () => {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>Minutos</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>{t.modalMins}</label>
                   <input 
                     type="number" 
                     value={sessionMins}
@@ -316,13 +322,13 @@ const HoursTracker = () => {
                   onClick={() => setIsModalOpen(false)}
                   style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white', padding: '15px', borderRadius: '12px', border: '1px solid var(--glass-border)', fontWeight: '700', cursor: 'pointer' }}
                 >
-                  Cancelar
+                  {t.cancel}
                 </button>
                 <button 
                   type="submit"
                   style={{ flex: 2, background: 'var(--primary)', color: 'var(--bg)', padding: '15px', borderRadius: '12px', border: 'none', fontWeight: '800', cursor: 'pointer' }}
                 >
-                  Registrar Reporte
+                  {t.save}
                 </button>
               </div>
             </form>

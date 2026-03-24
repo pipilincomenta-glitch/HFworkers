@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { Wallet, Plus, Trash2, CheckCircle2, AlertCircle, DollarSign, Calendar, FileText, X, Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const Payments = () => {
+const Payments = ({ lang = 'es' }) => {
+  const t = {
+    es: { title: 'Pagos y Facturación', subtitle: 'Gestión de nómina y reportes de gastos HFworkers', newExpense: 'Reportar Gasto', nextPay: 'PRÓXIMO PAGO', income: 'GANANCIA ACUMULADA (MAR)', refunds: 'REEMBOLSOS PENDIENTES', date: 'Fecha', payrollHistory: 'Historial de Nómina (Payroll)', paidOn: 'Liquidado el', expensesTitle: 'Gasto Realizado por Empresa', noExpenses: 'No hay gastos reportados.', reportedOn: 'Reportado:', approved: 'Aprobado', pending: 'En Revisión', modalTitle: 'Reportar Gasto', modalConcept: 'Concepto del Gasto', modalConceptPh: 'Ej. Gasolina comisión Real Estate...', modalAmount: 'Monto ($)', modalSubmit: 'Enviar a Revisión', expensesCount: 'Gastos', analysisReview: 'En revisión por analista' },
+    en: { title: 'Payments & Billing', subtitle: 'Payroll management and expense reports HFworkers', newExpense: 'Report Expense', nextPay: 'NEXT PAYMENT', income: 'ACCUMULATED INCOME (MAR)', refunds: 'PENDING REFUNDS', date: 'Date', payrollHistory: 'Payroll History', paidOn: 'Settled on', expensesTitle: 'Company Expenses', noExpenses: 'No expenses reported.', reportedOn: 'Reported:', approved: 'Approved', pending: 'Under Review', modalTitle: 'Report Expense', modalConcept: 'Expense Concept', modalConceptPh: 'e.g. Real Estate commission gas...', modalAmount: 'Amount ($)', modalSubmit: 'Send for Review', expensesCount: 'Expenses', analysisReview: 'Under analyst review' },
+    fr: { title: 'Paiements & Facturation', subtitle: 'Gestion de la paie et rapports de dépenses HFworkers', newExpense: 'Déclarer Dépense', nextPay: 'PROCHAIN PAIEMENT', income: 'REVENU ACCUMULÉ (MARS)', refunds: 'REMBOURSEMENTS EN ATTENTE', date: 'Date', payrollHistory: 'Historique de Paie', paidOn: 'Liquidé le', expensesTitle: 'Dépenses de l\'Entreprise', noExpenses: 'Aucune dépense signalée.', reportedOn: 'Signalé le:', approved: 'Approuvé', pending: 'En Révision', modalTitle: 'Déclarer Dépense', modalConcept: 'Concept de la Dépense', modalConceptPh: 'ex. Essence commission immobilière...', modalAmount: 'Montant ($)', modalSubmit: 'Envoyer pour Révision', expensesCount: 'Dépenses', analysisReview: 'En révision par l\'analyste' }
+  }[lang];
+
   const [payrolls, setPayrolls] = useState([])
 
   const [expenses, setExpenses] = useState([])
@@ -95,8 +101,8 @@ const Payments = () => {
     <div style={{ animation: 'fadeIn 0.6s ease' }}>
       <header className="portal-header" style={{ marginBottom: '60px' }}>
         <div className="portal-title">
-          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>Pagos y Gastos</h1>
-          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>Supervisión de nómina y reembolso de gastos operativos</p>
+          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{t.title}</h1>
+          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{t.subtitle}</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -104,27 +110,27 @@ const Payments = () => {
           style={{ background: 'var(--primary)', color: 'var(--bg)', padding: '12px 24px', border: 'none', cursor: 'pointer' }}
         >
           <Plus size={18} />
-          <span style={{ fontWeight: '700' }}>Reportar Gasto</span>
+          <span style={{ fontWeight: '700' }}>{t.newExpense}</span>
         </button>
       </header>
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
         <div className="card">
-          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>PRÓXIMO PAGO</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>{t.nextPay}</div>
           <div style={{ fontSize: '24px', fontWeight: '800' }}>$2,450.00</div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '5px' }}>Fecha: 31 Mar</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '5px' }}>{t.date}: 31 Mar</p>
         </div>
 
         <div className="card">
-          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>GANANCIA ACUMULADA (MAR)</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>{t.income}</div>
           <div style={{ fontSize: '24px', fontWeight: '800' }}>$4,900.00</div>
           <p style={{ color: '#4ade80', fontSize: '13px', marginTop: '5px' }}>+5% vs feb</p>
         </div>
 
         <div className="card">
-          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>REEMBOLSOS PENDIENTES</div>
-          <div style={{ fontSize: '24px', fontWeight: '800' }}>{expenses.filter(e => e.status === 'Pending').length} Gastos</div>
-          <p style={{ color: '#facc15', fontSize: '13px', marginTop: '5px' }}>En revisión por analista</p>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '10px' }}>{t.refunds}</div>
+          <div style={{ fontSize: '24px', fontWeight: '800' }}>{expenses.filter(e => e.status === 'Pending').length} {t.expensesCount}</div>
+          <p style={{ color: '#facc15', fontSize: '13px', marginTop: '5px' }}>{t.analysisReview}</p>
         </div>
       </div>
 
@@ -133,14 +139,14 @@ const Payments = () => {
         <div className="card" style={{ padding: '0' }}>
           <div style={{ padding: '25px 30px', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
              <Wallet size={20} style={{ color: 'var(--primary)' }} />
-             <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Historial de Nómina (Payroll)</h3>
+             <h3 style={{ fontSize: '18px', fontWeight: '700' }}>{t.payrollHistory}</h3>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {payrolls.map((pay, idx) => (
               <div key={pay.id} style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx !== payrolls.length - 1 ? '1px solid var(--glass-border)' : 'none' }}>
                 <div>
                   <div style={{ fontWeight: '700', fontSize: '15px' }}>{pay.period}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Liquidado el {pay.date}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{t.paidOn} {pay.date}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: '800', color: 'var(--primary)' }}>{pay.amount}</div>
@@ -167,7 +173,7 @@ const Payments = () => {
         <div className="card" style={{ padding: '0' }}>
           <div style={{ padding: '25px 30px', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
              <FileText size={20} style={{ color: 'var(--primary)' }} />
-             <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Gasto Realizado por Empresa</h3>
+             <h3 style={{ fontSize: '18px', fontWeight: '700' }}>{t.expensesTitle}</h3>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {loading ? (
@@ -176,14 +182,14 @@ const Payments = () => {
               </div>
             ) : expenses.length === 0 ? (
               <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                No hay gastos reportados.
+                {t.noExpenses}
               </div>
             ) : (
               expenses.map((exp, idx) => (
                 <div key={exp.id} className="history-row" style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx !== expenses.length - 1 ? '1px solid var(--glass-border)' : 'none', position: 'relative' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: '700', fontSize: '14px' }}>{exp.concept}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>Reportado: {new Date(exp.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{t.reportedOn} {new Date(exp.created_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <div style={{ textAlign: 'right' }}>
@@ -200,7 +206,7 @@ const Payments = () => {
                         justifyContent: 'flex-end'
                       }}>
                         {exp.status === 'Approved' ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />}
-                        {exp.status === 'Approved' ? 'Aprobado' : 'En Revisión'}
+                        {exp.status === 'Approved' ? t.approved : t.pending}
                       </div>
                     </div>
                     <button 
@@ -232,19 +238,19 @@ const Payments = () => {
         }}>
           <div className="card" style={{ width: '400px', padding: '40px', border: '1px solid var(--glass-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-               <h2 className="display" style={{ fontSize: '24px' }}>Reportar Gasto</h2>
+               <h2 className="display" style={{ fontSize: '24px' }}>{t.modalTitle}</h2>
                <X size={24} style={{ cursor: 'pointer' }} onClick={() => setIsModalOpen(false)} />
             </div>
             
             <form onSubmit={handleAddExpense}>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>Concepto del Gasto</label>
+                 <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>{t.modalConcept}</label>
                 <input 
                   autoFocus
                   type="text" 
                   value={newExpenseConcept}
                   onChange={(e) => setNewExpenseConcept(e.target.value)}
-                  placeholder="Ej. Gasolina comisión Real Estate..."
+                  placeholder={t.modalConceptPh}
                   style={{
                     width: '100%',
                     background: 'var(--glass-bg)',
@@ -259,7 +265,7 @@ const Payments = () => {
               </div>
 
               <div style={{ marginBottom: '30px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>Monto ($)</label>
+                 <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>{t.modalAmount}</label>
                 <input 
                   type="number" 
                   value={newExpenseAmount}
@@ -292,7 +298,7 @@ const Payments = () => {
                   cursor: 'pointer'
                 }}
               >
-                Enviar a Revisión
+                {t.modalSubmit}
               </button>
             </form>
           </div>

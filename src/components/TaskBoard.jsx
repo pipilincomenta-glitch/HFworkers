@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, CheckCircle2, Circle, ArrowRight, ArrowLeft, X, Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const TaskBoard = () => {
+const TaskBoard = ({ lang = 'es' }) => {
+  const t = {
+    es: { title: 'Gestión de Tareas', subtitle: 'Supervisa y organiza tus compromisos diarios', newTask: 'Nueva Tarea', todo: 'Por Hacer', doing: 'En Progreso', done: 'Finalizado', priority: 'Prioridad', high: 'Alta', medium: 'Media', low: 'Baja', modalTitle: 'Nueva Tarea', modalLabel: 'Título de la tarea', modalPh: 'Ej. Revisión de activos...', modalSubmit: 'Crear Tarea' },
+    en: { title: 'Task Management', subtitle: 'Monitor and organize your daily commitments', newTask: 'New Task', todo: 'To Do', doing: 'In Progress', done: 'Done', priority: 'Priority', high: 'High', medium: 'Medium', low: 'Low', modalTitle: 'New Task', modalLabel: 'Task Title', modalPh: 'e.g. Asset Review...', modalSubmit: 'Create Task' },
+    fr: { title: 'Gestion des Tâches', subtitle: 'Surveillez et organisez vos engagements quotidiens', newTask: 'Nouvelle Tâche', todo: 'À Faire', doing: 'En Cours', done: 'Terminé', priority: 'Priorité', high: 'Haute', medium: 'Moyenne', low: 'Basse', modalTitle: 'Nouvelle Tâche', modalLabel: 'Titre de la tâche', modalPh: 'ex. Révision d\'actifs...', modalSubmit: 'Créer Tâche' }
+  }[lang];
+
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -46,7 +52,7 @@ const TaskBoard = () => {
     }
   }
 
-  const columns = ['To Do', 'In Progress', 'Done']
+  const columns = [t.todo, t.doing, t.done]
 
   const handleAddTask = async (e) => {
     e.preventDefault()
@@ -106,8 +112,8 @@ const TaskBoard = () => {
     <div style={{ animation: 'fadeIn 0.5s ease', position: 'relative', minHeight: '80vh' }}>
       <header className="portal-header" style={{ marginBottom: '60px' }}>
         <div className="portal-title">
-          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>Gestión de Tareas</h1>
-          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>Supervisa y organiza tus compromisos diarios</p>
+          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{t.title}</h1>
+          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{t.subtitle}</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -115,7 +121,7 @@ const TaskBoard = () => {
           style={{ background: 'var(--primary)', color: 'var(--bg)', padding: '12px 24px', border: 'none', cursor: 'pointer' }}
         >
           <Plus size={18} />
-          <span style={{ fontWeight: '700' }}>Nueva Tarea</span>
+          <span style={{ fontWeight: '700' }}>{t.newTask}</span>
         </button>
       </header>
 
@@ -144,7 +150,7 @@ const TaskBoard = () => {
                       borderRadius: '4px',
                       fontWeight: '700'
                     }}>
-                      {task.priority}
+                      {task.priority === 'High' ? t.high : task.priority === 'Medium' ? t.medium : t.low}
                     </span>
                     <button 
                       onClick={() => deleteTask(task.id)}
@@ -204,7 +210,7 @@ const TaskBoard = () => {
         }}>
           <div className="card" style={{ width: '400px', padding: '40px', border: '1px solid var(--glass-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-               <h2 className="display" style={{ fontSize: '24px' }}>Nueva Tarea</h2>
+               <h2 className="display" style={{ fontSize: '24px' }}>{t.modalTitle}</h2>
                <X size={24} style={{ cursor: 'pointer' }} onClick={() => setIsModalOpen(false)} />
             </div>
             
@@ -249,7 +255,7 @@ const TaskBoard = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      {p}
+                      {p === 'High' ? t.high : p === 'Medium' ? t.medium : t.low}
                     </button>
                   ))}
                 </div>

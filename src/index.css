@@ -52,26 +52,12 @@ h1, h2, h3, .display {
   overflow: hidden;
 }
 
-.status-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 44px;
-  padding: 0 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 100;
-}
 
 .home-screen {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 80px 30px 40px;
+  padding: 40px 30px 40px;
   align-items: center;
   justify-content: flex-start;
   z-index: 50;
@@ -194,7 +180,7 @@ h1, h2, h3, .display {
 }
 
 @media (min-width: 1024px) {
-  .home-screen, .dock, .home-indicator, .mobile-header, .status-bar {
+  .home-screen, .dock, .home-indicator, .mobile-header {
     display: none !important;
   }
 }
@@ -207,7 +193,7 @@ h1, h2, h3, .display {
   .main-portal {
     position: absolute;
     inset: 0;
-    padding: 140px 20px 40px; /* Matched desktop padding for consistency */
+    padding: 80px 20px 40px;
     z-index: 150;
     display: none;
     backdrop-filter: blur(30px);

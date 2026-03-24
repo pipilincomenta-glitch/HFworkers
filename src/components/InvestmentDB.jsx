@@ -2,8 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Filter, Search, ArrowUpRight, Shield, Globe, Coins, Building, Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const InvestmentDB = () => {
-  const [filter, setFilter] = useState('All')
+const InvestmentDB = ({ lang = 'es' }) => {
+  const t = {
+    es: { title: 'Base de Datos de Inversiones', subtitle: 'Análisis y gestión de activos globales del grupo HF', filters: 'Filtros Avanzados', all: 'Todos', active: 'Activo / Fondo', category: 'Categoría', capital: 'Capital', yield: 'Rendimiento', actions: 'Acciones', noData: 'No se encontraron inversiones.', catRE: 'Bienes Raíces', catTech: 'Tecnología', catCrypto: 'Cripto', catSust: 'Sostenibilidad' },
+    en: { title: 'Investment Database', subtitle: 'Global asset analysis and management for HF Group', filters: 'Advanced Filters', all: 'All', active: 'Asset / Fund', category: 'Category', capital: 'Capital', yield: 'Yield', actions: 'Actions', noData: 'No investments found.', catRE: 'Real Estate', catTech: 'Technology', catCrypto: 'Crypto', catSust: 'Sustainability' },
+    fr: { title: 'Base de Données d\'Investissement', subtitle: 'Analyse et gestion des actifs mondiaux du groupe HF', filters: 'Filtres Avancés', all: 'Tous', active: 'Actif / Fonds', category: 'Catégorie', capital: 'Capital', yield: 'Rendement', actions: 'Actions', noData: 'Aucun investissement trouvé.', catRE: 'Immobilier', catTech: 'Technologie', catCrypto: 'Crypto', catSust: 'Durabilité' }
+  }[lang];
+
+  const [filter, setFilter] = useState(t.all)
   const [investments, setInvestments] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -38,9 +44,9 @@ const InvestmentDB = () => {
     }
   }
 
-  const categories = ['All', 'Real Estate', 'Technology', 'Crypto', 'Sustainability']
+  const categories = [t.all, 'Real Estate', 'Technology', 'Crypto', 'Sustainability']
 
-  const filteredInvestments = filter === 'All' 
+  const filteredInvestments = filter === t.all 
     ? investments 
     : investments.filter(inv => inv.category === filter)
 
@@ -48,13 +54,13 @@ const InvestmentDB = () => {
     <div style={{ animation: 'fadeIn 0.6s ease' }}>
       <header className="portal-header" style={{ marginBottom: '60px' }}>
         <div className="portal-title">
-          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>Base de Datos de Inversiones</h1>
-          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>Análisis y gestión de activos globales del grupo HF</p>
+          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{t.title}</h1>
+          <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{t.subtitle}</p>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
            <div className="nav-item" style={{ background: 'var(--glass-bg)', padding: '10px 20px', border: '1px solid var(--glass-border)' }}>
               <Filter size={16} />
-              <span>Filtros Avanzados</span>
+              <span>{t.filters}</span>
            </div>
         </div>
       </header>
@@ -86,11 +92,11 @@ const InvestmentDB = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--glass-border)' }}>
-              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', fontStyle: 'italic' }}>Activo / Fondo</th>
-              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>Categoría</th>
-              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>Capital</th>
-              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>Rendimiento</th>
-              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>Acciones</th>
+              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', fontStyle: 'italic' }}>{t.active}</th>
+              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>{t.category}</th>
+              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>{t.capital}</th>
+              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>{t.yield}</th>
+              <th style={{ padding: '20px 30px', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>{t.actions}</th>
             </tr>
           </thead>
           <tbody>
@@ -103,7 +109,7 @@ const InvestmentDB = () => {
             ) : filteredInvestments.length === 0 ? (
               <tr>
                 <td colSpan="5" style={{ padding: '100px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No se encontraron inversiones.
+                  {t.noData}
                 </td>
               </tr>
             ) : filteredInvestments.map((inv, idx) => (

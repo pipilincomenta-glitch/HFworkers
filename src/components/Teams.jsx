@@ -2,8 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { Users, Mail, Phone, MessageCircle, ExternalLink, Award, Circle, MapPin, Clock, Github, Linkedin, Globe, Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const Teams = ({ onChat }) => {
-  const [activeTab, setActiveTab] = useState('All Teams')
+const Teams = ({ onChat, lang = 'es' }) => {
+  const t = {
+    es: { subtitle: 'Gestiona y colabora con el talento de HFworkers', contact: 'Contactar', performance: 'Performance', location: 'Ubicación', sendMessage: 'Enviar Mensaje Directo', all: 'Todos', dev: 'Desarrollo', creative: 'Creativo', management: 'Gerencia' },
+    en: { subtitle: 'Manage and collaborate with HFworkers talent', contact: 'Contact', performance: 'Performance', location: 'Location', sendMessage: 'Send Direct Message', all: 'All Teams', dev: 'Development', creative: 'Creative', management: 'Management' },
+    fr: { subtitle: 'Gérez et collaborez avec les talents de HFworkers', contact: 'Contacter', performance: 'Performance', location: 'Emplacement', sendMessage: 'Envoyer Message Direct', all: 'Toutes les équipes', dev: 'Développement', creative: 'Créatif', management: 'Direction' }
+  }[lang];
+
+   const [activeTab, setActiveTab] = useState('All Teams')
   const [selectedMember, setSelectedMember] = useState(null)
   const [teamMembers, setTeamMembers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -39,7 +45,12 @@ const Teams = ({ onChat }) => {
     }
   }
 
-  const tabs = ['All Teams', 'Development', 'Creative', 'Management']
+  const tabs = [
+    { id: 'All Teams', label: t.all },
+    { id: 'Development', label: t.dev },
+    { id: 'Creative', label: t.creative },
+    { id: 'Management', label: t.management }
+  ]
   const filteredMembers = activeTab === 'All Teams' 
     ? teamMembers 
     : teamMembers.filter(m => m.team === activeTab || m.role?.includes(activeTab))
@@ -48,8 +59,8 @@ const Teams = ({ onChat }) => {
     <div className="teams-container" style={{ animation: 'fadeIn 0.5s ease', padding: '0 20px' }}>
       <header className="portal-header" style={{ marginBottom: '50px' }}>
         <div className="portal-title">
-          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{activeTab}</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>Gestiona y colabora con el talento de HFworkers</p>
+          <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{tabs.find(x => x.id === activeTab)?.label || activeTab}</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>{t.subtitle}</p>
         </div>
       </header>
 
@@ -57,22 +68,11 @@ const Teams = ({ onChat }) => {
       <div style={{ display: 'flex', gap: '10px', marginBottom: '40px', overflowX: 'auto', paddingBottom: '10px' }}>
         {tabs.map(tab => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '12px 24px',
-              background: activeTab === tab ? 'var(--primary)' : 'var(--glass-bg)',
-              color: activeTab === tab ? 'black' : 'var(--text)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '14px',
-              fontWeight: '700',
-              fontSize: '14px',
-              cursor: 'pointer',
-              transition: '0.3s',
-              whiteSpace: 'nowrap'
-            }}
+            key={tab.id}
+            className={`config-pill ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
           >
-            {tab}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -127,7 +127,7 @@ const Teams = ({ onChat }) => {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '18px 0', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)', marginBottom: '30px' }}>
                <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid var(--glass-border)' }}>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>Performance</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>{t.performance}</div>
                   <div style={{ fontWeight: '800', fontSize: '18px', color: 'var(--primary)' }}>{member.performance}</div>
                </div>
                <div style={{ textAlign: 'center', flex: 1 }}>
@@ -137,14 +137,14 @@ const Teams = ({ onChat }) => {
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
-               <button 
-                className="team-btn primary" 
-                style={{ flex: 1 }}
-                onClick={(e) => { e.stopPropagation(); onChat(member.id); }}
-               >
-                  <MessageCircle size={18} />
-                  <span>Chat</span>
-               </button>
+                  <button 
+                    className="team-btn primary" 
+                    style={{ flex: 1 }}
+                    onClick={(e) => { e.stopPropagation(); onChat(member.id); }}
+                  >
+                    <MessageCircle size={18} />
+                    <span>Chat</span>
+                  </button>
                <button 
                 className="team-btn secondary" 
                 style={{ width: '50px', justifyContent: 'center' }}
@@ -171,14 +171,14 @@ const Teams = ({ onChat }) => {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
-                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '5px' }}>Ubicación</div>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '5px' }}>{t.location}</div>
                     <div style={{ fontWeight: '700' }}>{selectedMember.location}</div>
-                 </div>
-                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '5px' }}>Performance</div>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '5px' }}>{t.performance}</div>
                     <div style={{ fontWeight: '700', color: '#4ade80' }}>{selectedMember.performance}</div>
-                 </div>
+                  </div>
               </div>
 
               <div style={{ display: 'flex', gap: '15px' }}>
@@ -188,7 +188,7 @@ const Teams = ({ onChat }) => {
                   onClick={() => { onChat(selectedMember.id); setSelectedMember(null); }}
                  >
                     <MessageCircle size={20} />
-                    <span>Enviar Mensaje Directo</span>
+                    <span>{t.sendMessage}</span>
                  </button>
                  <button className="team-btn secondary" style={{ width: '60px', height: '60px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Linkedin size={24} />
