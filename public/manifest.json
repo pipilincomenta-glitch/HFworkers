@@ -1,0 +1,17 @@
+{
+  "short_name": "HFworkers",
+  "name": "HFworkers Portal Editorial",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#131313",
+  "background_color": "#131313",
+  "description": "Portal de gestión editorial e inversiones de High Foundation."
+}
