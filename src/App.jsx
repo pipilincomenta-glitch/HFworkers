@@ -40,9 +40,11 @@ function App() {
   const [activeCall, setActiveCall] = useState(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
+    const initSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data?.session) setSession(data.session)
+    }
+    initSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
@@ -286,7 +288,7 @@ function App() {
   }
 
   return (
-    <div className="ios-container">
+    <div className="ios-container" style={{ '--primary': (theme || '').startsWith('glass') ? '#4ade80' : '#FFFFFF' }}>
 
       {/* Call Alert Overlay */}
       {activeCall && (
