@@ -12,9 +12,6 @@ const Rols = ({ lang = 'es' }) => {
 
    const [activeTab, setActiveTab] = useState('All Rols')
   const [selectedMember, setSelectedMember] = useState(null)
-  const [teamMembers, setTeamMembers] = useState([])
-  const [loading, setLoading] = useState(true)
-
   const fallbackMembers = [
     { id: 'f1', full_name: 'Jeremy', role: 'CEO & Founder', phone: '18491234567', team: 'Management', performance: '99.2%', location: 'Santo Domingo, DO', tz: 'GMT-4', color: '#4ade80' },
     { id: 'f2', full_name: 'Sarah Chen', role: 'Creative Director', phone: '18492223344', team: 'Creative', performance: '95.5%', location: 'New York, US', tz: 'EST', color: '#c084fc' },
@@ -28,14 +25,24 @@ const Rols = ({ lang = 'es' }) => {
   const fetchTeam = async () => {
     try {
       setLoading(true)
+      console.log('Fetching members from Supabase...');
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
       
-      if (error) console.warn('Supabase profiles empty or error, using fallback');
+      if (error) {
+        console.error('Supabase error:', error.message);
+        setTeamMembers(fallbackMembers);
+        return;
+      }
+      
+      console.log(`Found ${data?.length || 0} members in Supabase.`);
       
       const dbMembers = (data || []).map(member => ({
         ...member,
+        full_name: member.full_name || member.display_name || member.username || 'Nuevo Miembro',
+        role: member.role || 'Colaborador',
+        phone: member.phone || member.whatsapp || '',
         location: member.location || 'Santo Domingo, DO',
         tz: member.tz || 'GMT-4',
         performance: member.performance || (85 + Math.random() * 15).toFixed(1) + '%',
@@ -46,14 +53,14 @@ const Rols = ({ lang = 'es' }) => {
       // Combine DB members with fallbacks, avoiding duplicates by name
       const combined = [...dbMembers];
       fallbackMembers.forEach(fb => {
-        if (!combined.some(m => m.full_name === fb.full_name)) {
+        if (!combined.some(m => m.full_name.toLowerCase() === fb.full_name.toLowerCase())) {
           combined.push(fb);
         }
       });
       
       setTeamMembers(combined)
     } catch (err) {
-      console.error('Error fetching team:', err)
+      console.error('Connection error:', err)
       setTeamMembers(fallbackMembers)
     } finally {
       setLoading(false)
@@ -87,11 +94,22 @@ const Rols = ({ lang = 'es' }) => {
 
   return (
     <div className="teams-container" style={{ animation: 'fadeIn 0.5s ease', padding: '0 20px' }}>
-      <header className="portal-header" style={{ marginBottom: '50px' }}>
+      <header className="portal-header" style={{ marginBottom: '50px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="portal-title">
           <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{tabs.find(x => x.id === activeTab)?.label || activeTab}</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>{t.subtitle}</p>
         </div>
+        <button 
+          onClick={fetchTeam}
+          style={{ 
+            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'white', 
+            width: '44px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', 
+            justifyContent: 'center', cursor: 'pointer', transition: 'var(--transition)' 
+          }}
+          title="Refrescar miembros"
+        >
+          <Globe size={20} className={loading ? 'animate-spin' : ''} />
+        </button>
       </header>
 
       {/* Modern Tabs */}

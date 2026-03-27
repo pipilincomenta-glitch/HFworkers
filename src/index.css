@@ -8,7 +8,7 @@
   --text-muted: rgba(255, 255, 255, 0.6);
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: 40px;
+  --glass-blur: 20px;
   --radius-xl: 32px;
   --radius-lg: 20px;
   --radius-md: 12px;
@@ -115,8 +115,8 @@ h1, h2, h3, .display {
   max-width: 380px;
   height: 85px;
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(50px);
-  -webkit-backdrop-filter: blur(50px);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   border: 1px solid var(--glass-border);
   border-radius: 35px;
   display: flex;
@@ -196,7 +196,7 @@ h1, h2, h3, .display {
     padding: 80px 20px 40px;
     z-index: 150;
     display: none;
-    backdrop-filter: blur(30px);
+    backdrop-filter: blur(20px);
     background: var(--bg);
   }
 
