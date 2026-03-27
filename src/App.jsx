@@ -26,7 +26,6 @@ import InvestmentDB from './components/InvestmentDB'
 import HoursTracker from './components/HoursTracker'
 import Rols from './components/Rols'
 import Payments from './components/Payments'
-import Calendar from './components/Calendar'
 import Config from './components/Config'
 import Login from './components/Login'
 import { supabase } from './lib/supabase'
@@ -139,12 +138,7 @@ function App() {
       .eq('user_id', session.user.id)
       .neq('status', 'Finalizado')
 
-    const { count: eCount } = await supabase
-      .from('calendar_events')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', session.user.id)
-
-    setCounts({ tasks: tCount || 0, events: eCount || 0 })
+    setCounts({ tasks: tCount || 0, events: 0 })
   }
 
   const updateSetting = async (key, val) => {
@@ -219,7 +213,6 @@ function App() {
   const apps = [
     { id: 'dashboard', name: t.nav.dashboard, icon: <LayoutDashboard size={28} /> },
     { id: 'tasks', name: t.nav.tasks, icon: <CheckSquare size={28} /> },
-    { id: 'calendar', name: t.nav.calendar, icon: <CalendarIcon size={28} /> },
     { id: 'rols', name: t.nav.rols, icon: <Users size={28} /> },
     { id: 'investments', name: t.nav.investments, icon: <Database size={28} /> },
     { id: 'payments', name: t.nav.payments, icon: <Wallet size={28} /> },
@@ -235,7 +228,6 @@ function App() {
       case 'hours': return <HoursTracker lang={lang} />
       case 'rols': return <Rols lang={lang} />
       case 'payments': return <Payments lang={lang} />
-      case 'calendar': return <Calendar lang={lang} />
       case 'settings': return <Config 
           theme={theme} setTheme={handleSetTheme} 
           lang={lang} setLang={handleSetLang} 
@@ -256,8 +248,7 @@ function App() {
 
             <div className="dashboard-grid">
               {[
-                { id: 'tasks', icon: <CheckSquare size={20} />, label: t.upcoming, val: counts.tasks.toString(), sub: t.pending },
-                { id: 'calendar', icon: <CalendarIcon size={20} />, label: t.nav.calendar, val: counts.events.toString(), sub: t.received }
+                { id: 'tasks', icon: <CheckSquare size={20} />, label: t.upcoming, val: counts.tasks.toString(), sub: t.pending }
               ].map(card => (
                 <div key={card.id} className="card" onClick={() => setCurrentView(card.id)} style={{ cursor: 'pointer', padding: compactMode ? '20px' : '30px' }}>
                   <div className="card-header" style={{ marginBottom: '15px' }}>
@@ -374,8 +365,8 @@ function App() {
           
           <div className="dock">
              {[
-               { id: 'calendar', icon: <CalendarIcon size={28} /> },
                { id: 'tasks', icon: <CheckSquare size={28} /> },
+               { id: 'rols', icon: <Users size={28} /> },
                { id: 'payments', icon: <Wallet size={28} /> },
                { id: 'settings', icon: <Settings size={28} /> }
              ].map(item => (

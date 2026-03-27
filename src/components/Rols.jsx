@@ -15,6 +15,12 @@ const Rols = ({ lang = 'es' }) => {
   const [teamMembers, setTeamMembers] = useState([])
   const [loading, setLoading] = useState(true)
 
+  const fallbackMembers = [
+    { id: 'f1', full_name: 'Jeremy', role: 'CEO & Founder', phone: '18491234567', team: 'Management', performance: '99.2%', location: 'Santo Domingo, DO', tz: 'GMT-4', color: '#4ade80' },
+    { id: 'f2', full_name: 'Sarah Chen', role: 'Creative Director', phone: '18492223344', team: 'Creative', performance: '95.5%', location: 'New York, US', tz: 'EST', color: '#c084fc' },
+    { id: 'f3', full_name: 'Alex Rivera', role: 'Tech Lead', phone: '18495556677', team: 'Development', performance: '98.1%', location: 'Madrid, ES', tz: 'CET', color: '#3b82f6' }
+  ];
+
   useEffect(() => {
     fetchTeam()
   }, [])
@@ -26,21 +32,29 @@ const Rols = ({ lang = 'es' }) => {
         .from('profiles')
         .select('*')
       
-      if (error) throw error
+      if (error) console.warn('Supabase profiles empty or error, using fallback');
       
-      // Mock some data for missing fields to keep the UI rich
-      const richData = (data || []).map(member => ({
+      const dbMembers = (data || []).map(member => ({
         ...member,
-        location: 'Santo Domingo, DO',
-        tz: 'GMT-4',
-        performance: (85 + Math.random() * 15).toFixed(1) + '%',
-        team: member.role?.includes('Design') ? 'Creative' : 'Development',
-        color: member.role?.includes('Design') ? '#c084fc' : '#4ade80'
+        location: member.location || 'Santo Domingo, DO',
+        tz: member.tz || 'GMT-4',
+        performance: member.performance || (85 + Math.random() * 15).toFixed(1) + '%',
+        team: member.team || (member.role?.includes('Design') ? 'Creative' : 'Development'),
+        color: member.color || (member.role?.includes('Design') ? '#c084fc' : '#4ade80')
       }))
+
+      // Combine DB members with fallbacks, avoiding duplicates by name
+      const combined = [...dbMembers];
+      fallbackMembers.forEach(fb => {
+        if (!combined.some(m => m.full_name === fb.full_name)) {
+          combined.push(fb);
+        }
+      });
       
-      setTeamMembers(richData)
+      setTeamMembers(combined)
     } catch (err) {
       console.error('Error fetching team:', err)
+      setTeamMembers(fallbackMembers)
     } finally {
       setLoading(false)
     }
