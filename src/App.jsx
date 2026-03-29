@@ -18,148 +18,38 @@ import {
   LogOut,
   Bell,
   X,
-  MessageSquare
+  MessageSquare,
+  ArrowRight,
+  ExternalLink,
+  ShieldCheck,
+  Zap,
+  Globe
 } from 'lucide-react'
 import './index.css'
-import TaskBoard from './components/TaskBoard'
-import InvestmentDB from './components/InvestmentDB'
-import HoursTracker from './components/HoursTracker'
-import Rols from './components/Rols'
-import Payments from './components/Payments'
 import Config from './components/Config'
-import Login from './components/Login'
-import { supabase } from './lib/supabase'
 import LogoDark from './logopngHF.png'
 import LogoWhite from './logoblancohf.png'
 
+/**
+ * HFworkers Hub - Dashboard & Links Portal
+ * Simplified version without Supabase/Login dependencies.
+ */
 function App() {
-  const [session, setSession] = useState(null)
-  const [lang, setLang] = useState('es')
-  const [currentView, setCurrentView] = useState(window.innerWidth > 1023 ? 'dashboard' : 'home')
-  const [activeCall, setActiveCall] = useState(null)
-
-  useEffect(() => {
-    const initSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (data?.session) setSession(data.session)
-    }
-    initSession()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-
-    // Global Alert Listener
-    const channel = supabase.channel('global-alerts')
-      .on('broadcast', { event: 'call_requested' }, (payload) => {
-        if (session && payload.payload.workerId === session.user.id) {
-          setActiveCall(payload.payload)
-          // Play sound if possible
-          try {
-             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-             audio.play();
-          } catch(e) {}
-        }
-      })
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-      supabase.removeChannel(channel)
-    }
-  }, [session])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    setSession(null)
-  }
+  // --- Persistent State (LocalStorage) ---
+  const [lang, setLang] = useState(() => localStorage.getItem('hf_lang') || 'es')
+  const [theme, setTheme] = useState(() => localStorage.getItem('hf_theme') || 'dark')
+  const [guiSize, setGuiSize] = useState(() => localStorage.getItem('hf_guiSize') || 'default')
+  const [compactMode, setCompactMode] = useState(() => localStorage.getItem('hf_compactMode') === 'true')
   
-  // Settings State
-  const [theme, setTheme] = useState('dark')
-  const [guiSize, setGuiSize] = useState('default')
-  const [compactMode, setCompactMode] = useState(false)
-  
-  const translations = {
-    es: { 
-      portal: 'Portal Editorial', welcome: 'Bienvenido de nuevo al ecosistema de gestión HFworkers',
-      upcoming: 'Próximas Tareas', pending: 'Pendientes', received: 'Eventos', 
-      settings: 'Configuración', logout: 'Cerrar Sesión', adjusts: 'Ajustes',
-      nav: { dashboard: 'Dashboard', tasks: 'Tareas', investments: 'Inversiones', payments: 'Pagos', hours: 'Horas', rols: 'Rols', calendar: 'Calendario' }
-    },
-    en: { 
-      portal: 'Editorial Portal', welcome: 'Welcome back to the HFworkers management ecosystem',
-      upcoming: 'Upcoming Tasks', pending: 'Pending', received: 'Events', 
-      settings: 'Settings', logout: 'Sign Out', adjusts: 'Settings',
-      nav: { dashboard: 'Dashboard', tasks: 'Tasks', investments: 'Investments', payments: 'Payments', hours: 'Hours', rols: 'Rols', calendar: 'Calendar' }
-    },
-    fr: { 
-      portal: 'Portail Éditorial', welcome: 'Bienvenue dans l\'écosystème de gestión HFworkers',
-      upcoming: 'Tâches à Venir', pending: 'En attente', received: 'Événements', 
-      settings: 'Configuration', logout: 'Déconnexion', adjusts: 'Réglages',
-      nav: { dashboard: 'Tableau de bord', tasks: 'Tâches', investments: 'Investissements', payments: 'Paiements', hours: 'Heures', rols: 'Rols', calendar: 'Calendrier' }
-    }
-  };
-  const t = translations[lang] || translations.en;
+  // --- UI State ---
+  const [currentView, setCurrentView] = useState('dashboard') // Start with Dashboard Summary
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
-  const [counts, setCounts] = useState({ tasks: 0, events: 0 })
-
-  useEffect(() => {
-    if (session) {
-      loadSettings()
-      fetchCounts()
-    }
-  }, [session])
-
-  useEffect(() => {
-    if (session && currentView === 'dashboard') {
-      fetchCounts()
-    }
-  }, [currentView])
-
-  const loadSettings = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('theme, lang, gui_size, compact_mode')
-      .eq('id', session.user.id)
-      .single()
-    
-    if (data) {
-      if (data.theme) setTheme(data.theme)
-      if (data.lang) setLang(data.lang)
-      if (data.gui_size) setGuiSize(data.gui_size)
-      if (data.compact_mode !== undefined) setCompactMode(data.compact_mode)
-    }
-  }
-
-  const fetchCounts = async () => {
-    const { count: tCount } = await supabase
-      .from('tasks')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', session.user.id)
-      .neq('status', 'Finalizado')
-
-    setCounts({ tasks: tCount || 0, events: 0 })
-  }
-
-  const updateSetting = async (key, val) => {
-    if (!session) return
-    await supabase
-      .from('profiles')
-      .update({ [key]: val })
-      .eq('id', session.user.id)
-  }
-
-  const handleSetTheme = (v) => { setTheme(v); updateSetting('theme', v); }
-  const handleSetLang = (v) => { setLang(v); updateSetting('lang', v); }
-  const handleSetGuiSize = (v) => { setGuiSize(v); updateSetting('gui_size', v); }
-  const handleSetCompactMode = (v) => { setCompactMode(v); updateSetting('compact_mode', v); }
-
-  const goHome = () => {
-    setCurrentView(window.innerWidth > 1023 ? 'dashboard' : 'home')
-  }
-
+  // --- Theme Sync ---
   useEffect(() => {
     const root = document.documentElement;
+    localStorage.setItem('hf_theme', theme)
+    
     if (theme === 'light') {
       root.style.setProperty('--bg', '#F5F5F7');
       root.style.setProperty('--surface', '#FFFFFF');
@@ -187,7 +77,7 @@ function App() {
       root.style.setProperty('--text', '#F1F5F9');
       root.style.setProperty('--text-muted', 'rgba(241, 245, 249, 0.6)');
       root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.05)');
-      root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.1)');
+      root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.10)');
       root.style.setProperty('--grad-start', '#1E293B');
       root.style.setProperty('--grad-end', '#0F172A');
     } else {
@@ -205,68 +95,138 @@ function App() {
     const scale = guiSize === 'small' ? '0.9' : guiSize === 'large' ? '1.1' : '1';
     root.style.setProperty('--gui-scale', scale);
     root.style.zoom = scale;
-
+    localStorage.setItem('hf_guiSize', guiSize)
   }, [theme, guiSize]);
-  
+
+  useEffect(() => {
+    localStorage.setItem('hf_lang', lang)
+  }, [lang])
+
+  useEffect(() => {
+    localStorage.setItem('hf_compactMode', compactMode)
+  }, [compactMode])
+
+  // --- Translations ---
+  const translations = {
+    es: { 
+      portal: 'Portal Editorial', welcome: 'Acceso Centralizado a los Flujos de Trabajo HFworkers',
+      upcoming: 'Estatus Proyecto', pending: 'Online', received: 'Eventos', 
+      settings: 'Ajustes', logout: 'Recargar', adjusts: 'Configuración',
+      enter: 'Entrar al Ecosistema', overview: 'Dashboard Resumen',      nav: { dashboard: 'Resumen', tasks: 'Sheets', drive: 'Drive', payments: 'Pagos', hours: 'Horas', rols: 'Rols', whatsapp: 'WhatsApp' }
+    },
+    en: { 
+      portal: 'Editorial Portal', welcome: 'Centralized Access to HFworkers Workflows',
+      upcoming: 'Project Status', pending: 'Online', received: 'Events', 
+      settings: 'Settings', logout: 'Reload', adjusts: 'Configuration',
+      enter: 'Enter Ecosystem', overview: 'Dashboard Overview',
+      nav: { dashboard: 'Overview', tasks: 'Sheets', drive: 'Drive', payments: 'Payments', hours: 'Hours', rols: 'Rols', whatsapp: 'WhatsApp' }
+    },
+    fr: { 
+      portal: 'Portail Éditorial', welcome: 'Accès Centralisé aux Flux de Travail HFworkers',
+      upcoming: 'Statut du Projet', pending: 'En ligne', received: 'Événements', 
+      settings: 'Réglages', logout: 'Recharger', adjusts: 'Configuration',
+      enter: 'Entrer dans l\'Écosystème', overview: 'Tableau de Bord',
+      nav: { dashboard: 'Aperçu', tasks: 'Sheets', drive: 'Drive', payments: 'Paiements', hours: 'Heures', rols: 'Rols', whatsapp: 'WhatsApp' }
+    }
+  };
+  const t = translations[lang] || translations.en;
   const currentLogo = (theme === 'dark' || theme === 'glass-midnight' || theme === 'glass-emerald') ? LogoWhite : LogoDark;
 
+  // --- Static Link Data ---
   const apps = [
-    { id: 'dashboard', name: t.nav.dashboard, icon: <LayoutDashboard size={28} /> },
-    { id: 'tasks', name: t.nav.tasks, icon: <CheckSquare size={28} /> },
-    { id: 'rols', name: t.nav.rols, icon: <Users size={28} /> },
-    { id: 'investments', name: t.nav.investments, icon: <Database size={28} /> },
-    { id: 'payments', name: t.nav.payments, icon: <Wallet size={28} /> },
-    { id: 'hours', name: t.nav.hours, icon: <Clock size={28} /> },
+    { id: 'tasks', name: t.nav.tasks, icon: <CheckSquare size={28} />, externalUrl: 'https://docs.google.com/spreadsheets/d/1V8Qr-sGKDM8Ate3vviCqD12_tCD2x-z2' },
+    { id: 'drive', name: t.nav.drive, icon: <Database size={28} />, externalUrl: 'https://drive.google.com/drive/folders/1V8Qr-sGKDM8Ate3vviCqD12_tCD2x-z2?usp=sharing' },
+    { id: 'whatsapp', name: t.nav.whatsapp, icon: <MessageSquare size={28} />, externalUrl: 'https://chat.whatsapp.com/EP1y8LTICMeBan9oCEiDSp?mode=gi_t' },
   ]
 
+  const handleExternalNav = (url) => {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  const navigateTo = (view) => {
+    setIsTransitioning(true)
+    setTimeout(() => {
+      setCurrentView(view)
+      setIsTransitioning(false)
+    }, 200)
+  }
+
+  // --- Views ---
   const renderContent = () => {
-    if (currentView === 'home') return null;
+    if (currentView === 'home') return null; // Home is the Grid view
 
     switch (currentView) {
-      case 'tasks': return <TaskBoard lang={lang} />
-      case 'investments': return <InvestmentDB lang={lang} />
-      case 'hours': return <HoursTracker lang={lang} />
-      case 'rols': return <Rols lang={lang} />
-      case 'payments': return <Payments lang={lang} />
-      case 'settings': return <Config 
-          theme={theme} setTheme={handleSetTheme} 
-          lang={lang} setLang={handleSetLang} 
-          guiSize={guiSize} setGuiSize={handleSetGuiSize}
-          compactMode={compactMode} setCompactMode={handleSetCompactMode}
-          onLogout={handleLogout}
-        />
+      case 'settings':
+        return (
+          <Config 
+            theme={theme} setTheme={setTheme} 
+            lang={lang} setLang={setLang} 
+            guiSize={guiSize} setGuiSize={setGuiSize}
+            compactMode={compactMode} setCompactMode={setCompactMode}
+            onLogout={() => window.location.reload()}
+          />
+        )
       case 'dashboard':
       default:
         return (
-          <div className="dashboard-view" style={{ animation: 'fadeIn 0.5s ease' }}>
-            <header className="portal-header" style={{ marginBottom: '60px' }}>
+          <div className="dashboard-view" style={{ animation: 'fadeIn 0.5s ease', padding: '0 20px' }}>
+            <header className="portal-header" style={{ marginBottom: '60px', textAlign: 'center' }}>
               <div className="portal-title">
-                <h1 className="display" style={{ fontSize: '42px', marginBottom: '16px' }}>{t.portal}</h1>
-                <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{t.welcome}</p>
+                <h1 className="display" style={{ fontSize: '48px', marginBottom: '16px', letterSpacing: '-0.02em' }}>{t.portal}</h1>
+                <p style={{ fontSize: '18px', opacity: 0.7, maxWidth: '600px', margin: '0 auto' }}>{t.welcome}</p>
               </div>
             </header>
 
-            <div className="dashboard-grid">
-              {[
-                { id: 'tasks', icon: <CheckSquare size={20} />, label: t.upcoming, val: counts.tasks.toString(), sub: t.pending }
-              ].map(card => (
-                <div key={card.id} className="card" onClick={() => setCurrentView(card.id)} style={{ cursor: 'pointer', padding: compactMode ? '20px' : '30px' }}>
-                  <div className="card-header" style={{ marginBottom: '15px' }}>
-                    {card.icon}
-                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{card.label}</span>
+            <div className="dashboard-grid" style={{ maxWidth: '900px', margin: '0 auto' }}>
+              <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%)', border: '1px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ padding: '12px', background: '#4ade80', borderRadius: '15px', color: 'black' }}><Zap size={24} /></div>
+                    <div>
+                      <h2 style={{ fontSize: '24px', fontWeight: '800' }}>{t.upcoming}</h2>
+                      <p style={{ color: '#4ade80', fontWeight: '700', fontSize: '14px' }}>STATUS: ONLINE</p>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '28px', fontWeight: '800', color: card.color }}>{card.val}</div>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{card.sub}</p>
                 </div>
-              ))}
-              {/* WhatsApp Quick Link */}
-              <div className="card" onClick={() => window.open('https://wa.me/18491234567', '_blank')} style={{ cursor: 'pointer', padding: compactMode ? '20px' : '30px', background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', color: 'white' }}>
-                  <div className="card-header" style={{ marginBottom: '15px' }}>
-                    <MessageSquare size={20} />
-                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>WhatsApp</span>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px' }}>
+                    <p style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '10px' }}>Workers Active</p>
+                    <div style={{ fontSize: '28px', fontWeight: '900' }}>14</div>
                   </div>
-                  <div style={{ fontSize: '20px', fontWeight: '800' }}>Grupo Oficial</div>
-                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>Ir a soporte</p>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px' }}>
+                    <p style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '10px' }}>Today's Tasks</p>
+                    <div style={{ fontSize: '28px', fontWeight: '900' }}>High</div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => navigateTo('home')}
+                  style={{ 
+                    marginTop: '40px', width: '100%', padding: '20px', 
+                    borderRadius: '20px', background: 'var(--primary)', 
+                    color: 'var(--bg)', fontWeights: '900', fontSize: '18px',
+                    border: 'none', cursor: 'pointer', display: 'flex', 
+                    alignItems: 'center', justifyContent: 'center', gap: '12px',
+                    transition: '0.3s'
+                  }}
+                  className="enter-btn"
+                >
+                  <span>{t.enter}</span>
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+
+              {/* Quick Contact Card */}
+              <div className="card" onClick={() => handleExternalNav('https://chat.whatsapp.com/EP1y8LTICMeBan9oCEiDSp?mode=gi_t')} style={{ padding: '30px', cursor: 'pointer', background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', color: 'white', marginTop: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <MessageSquare size={32} />
+                  <div>
+                    <h3 style={{ fontWeight: '800', fontSize: '20px' }}>WhatsApp Group</h3>
+                    <p style={{ opacity: 0.8, fontSize: '14px' }}>Acceso directo a soporte editorial</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -274,46 +234,35 @@ function App() {
     }
   }
 
-  if (!session) {
-    return <Login onSession={setSession} />
-  }
-
   return (
-    <div className="ios-container" style={{ '--primary': (theme || '').startsWith('glass') ? '#4ade80' : '#FFFFFF' }}>
-
-      {/* Call Alert Overlay */}
-      {activeCall && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: '#ef4444', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', animation: 'blink 1s infinite alternate' }}>
-           <Bell size={100} style={{ marginBottom: '30px', animation: 'tilt 0.2s infinite' }} />
-           <h1 className="display" style={{ fontSize: '48px', marginBottom: '20px' }}>¡EL JEFE TE LLAMA!</h1>
-           <p style={{ fontSize: '24px', opacity: 0.9 }}>{activeCall.bossName} necesita hablar contigo urgente.</p>
-           <button 
-            onClick={() => setActiveCall(null)}
-            style={{ marginTop: '50px', background: 'white', color: '#ef4444', border: 'none', padding: '20px 60px', borderRadius: '20px', fontSize: '20px', fontWeight: '800', cursor: 'pointer' }}
-           >
-             ENTENDIDO
-           </button>
-        </div>
-      )}
+    <div className={`ios-container theme-${theme}`} style={{ 
+      '--primary': (theme || '').startsWith('glass') ? '#4ade80' : '#FFFFFF',
+      opacity: isTransitioning ? 0 : 1,
+      transition: 'opacity 0.2s ease'
+    }}>
 
       {/* Sidebar for Desktop */}
       <aside className="sidebar">
-        <div className="sidebar-logo" onClick={goHome} style={{ cursor: 'pointer', padding: '20px 0', marginBottom: '45px', textAlign: 'center' }}>
-          <img src={currentLogo} alt="HFworkers" style={{ height: '70px', objectFit: 'contain', filter: theme === 'light' ? 'none' : 'drop-shadow(0 0 15px rgba(255,255,255,0.1))' }} />
+        <div className="sidebar-logo" onClick={() => navigateTo('dashboard')} style={{ cursor: 'pointer', padding: '20px 0', marginBottom: '45px', textAlign: 'center' }}>
+          <img src={currentLogo} alt="HFworkers" style={{ height: '70px', objectFit: 'contain' }} />
         </div>
         <nav style={{ flex: 1 }}>
+          <div className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`} onClick={() => navigateTo('dashboard')}>
+            <LayoutDashboard size={20} />
+            <span>{t.nav.dashboard}</span>
+          </div>
           {apps.map((app, i) => (
-            <div key={i} className={`nav-item ${currentView === app.id ? 'active' : ''}`} onClick={() => setCurrentView(app.id)}>
+            <div key={i} className={`nav-item`} onClick={() => handleExternalNav(app.externalUrl)}>
               {React.cloneElement(app.icon, { size: 20 })}
               <span>{app.name}</span>
             </div>
           ))}
         </nav>
-        <div className={`nav-item ${currentView === 'settings' ? 'active' : ''}`} onClick={() => setCurrentView('settings')}>
+        <div className={`nav-item ${currentView === 'settings' ? 'active' : ''}`} onClick={() => navigateTo('settings')}>
           <Settings size={20} />
           <span>{t.settings}</span>
         </div>
-        <div className="nav-item" onClick={handleLogout} style={{ marginTop: '10px', color: '#f87171' }}>
+        <div className="nav-item" onClick={() => window.location.reload()} style={{ marginTop: '10px', color: '#f87171' }}>
           <LogOut size={20} />
           <span>{t.logout}</span>
         </div>
@@ -325,15 +274,15 @@ function App() {
            <div className="mobile-nav-bar">
               <button 
                 className="back-btn"
-                onClick={goHome} 
+                onClick={() => navigateTo('home')} 
               >
                 <ChevronLeft size={24} />
-                <span>Home</span>
+                <span>Ecosistema</span>
               </button>
               <div className="mobile-view-title display">
-                {currentView === 'home' ? '' : currentView === 'settings' ? t.settings : apps.find(a => a.id === currentView)?.name || ''}
+                {currentView === 'dashboard' ? t.overview : currentView === 'settings' ? t.settings : ''}
               </div>
-             <button className="header-action-btn" onClick={goHome}>
+             <button className="header-action-btn" onClick={() => navigateTo('dashboard')}>
                 <Home size={20} />
               </button>
            </div>
@@ -348,14 +297,14 @@ function App() {
         <div className="home-screen" style={{ animation: 'zoomIn 0.4s ease' }}>
           <div className="home-grid">
             {apps.map(app => (
-              <div key={app.id} className="app-icon-wrapper" onClick={() => setCurrentView(app.id)}>
+              <div key={app.id} className="app-icon-wrapper" onClick={() => handleExternalNav(app.externalUrl)}>
                 <div className="app-icon">
                   {React.cloneElement(app.icon, { size: 32 })}
                 </div>
                 <span className="app-label">{app.name}</span>
               </div>
             ))}
-            <div className="app-icon-wrapper" onClick={() => setCurrentView('settings')}>
+            <div className="app-icon-wrapper" onClick={() => navigateTo('settings')}>
               <div className="app-icon" style={{ background: 'linear-gradient(135deg, #8e8e93 0%, #3a3a3c 100%)' }}>
                 <Settings size={32} />
               </div>
@@ -365,12 +314,11 @@ function App() {
           
           <div className="dock">
              {[
-               { id: 'tasks', icon: <CheckSquare size={28} /> },
-               { id: 'rols', icon: <Users size={28} /> },
-               { id: 'payments', icon: <Wallet size={28} /> },
-               { id: 'settings', icon: <Settings size={28} /> }
+               { id: 'drive', icon: <Database size={28} />, url: 'https://drive.google.com/drive/folders/1V8Qr-sGKDM8Ate3vviCqD12_tCD2x-z2?usp=sharing' },
+               { id: 'whatsapp', icon: <MessageSquare size={28} />, url: 'https://chat.whatsapp.com/EP1y8LTICMeBan9oCEiDSp?mode=gi_t' },
+               { id: 'settings', icon: <Settings size={28} />, view: 'settings' }
              ].map(item => (
-               <div key={item.id} className="dock-icon" onClick={() => setCurrentView(item.id)}>
+               <div key={item.id} className="dock-icon" onClick={() => item.url ? handleExternalNav(item.url) : navigateTo(item.view)}>
                  {item.icon}
                </div>
              ))}
@@ -379,9 +327,13 @@ function App() {
       )}
 
       {/* Mobile Home Indicator */}
-      <div className="home-indicator" onClick={goHome} />
+      <div className="home-indicator" onClick={() => navigateTo('home')} />
 
       <style>{`
+        .enter-btn:hover {
+          transform: scale(1.02);
+          box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+        }
         .mobile-nav-bar {
           display: none;
           justify-content: space-between;
@@ -394,8 +346,6 @@ function App() {
           top: 0;
           z-index: 200;
         }
-        @keyframes blink { from { background: #ef4444; } to { background: #7f1d1d; } }
-        @keyframes tilt { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
         .back-btn {
           display: flex;
           align-items: center;
@@ -406,7 +356,6 @@ function App() {
           font-weight: 500;
           font-size: 16px;
           cursor: pointer;
-          padding: 0;
         }
         .header-action-btn {
           background: var(--glass-bg);
@@ -419,39 +368,24 @@ function App() {
           align-items: center;
           justify-content: center;
         }
-        .mobile-view-title {
-          font-size: 16px;
-          font-weight: 700;
-        }
         .content-scrollable {
           flex: 1;
           overflow-y: auto;
-          padding-bottom: 40px;
+          padding: 40px 0;
         }
         .active-view {
           display: flex !important;
           flex-direction: column;
           background: var(--bg);
           z-index: 150 !important;
-          padding: 0 !important; /* Managed by mobile-nav-bar and content-scrollable */
         }
         @media (max-width: 1023px) {
-          .mobile-nav-bar {
-            display: flex;
-          }
-          .main-portal {
-            height: 100vh;
-            width: 100vw;
-          }
+          .mobile-nav-bar { display: flex; }
+          .main-portal { height: 100vh; width: 100vw; }
+          .content-scrollable { padding: 20px 0; }
         }
-        @keyframes zoomIn {
-          from { opacity: 0; transform: scale(1.1); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
     </div>
   )

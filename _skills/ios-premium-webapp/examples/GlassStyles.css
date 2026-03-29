@@ -1,0 +1,52 @@
+/* 
+  ios-premium-webapp: Glassmorphism Design System
+  
+  This stylesheet provides the foundational tokens for a premium 
+  iOS-style interface focused on depth and transparency.
+*/
+
+:root {
+  /* Dynamic Backgrounds */
+  --bg-gradient: radial-gradient(circle at 50% 100%, #1f1f1f 0%, #131313 100%);
+  
+  /* Surface Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.05); /* Ultra-thin transparency */
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(25px);
+  
+  /* Typography */
+  --text-main: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  
+  /* Brand */
+  --primary: #F5F5F7; /* Apple-style near-white */
+}
+
+/* Base Glass Container */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur); /* Safari Support */
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* iOS Springboard Icon */
+.app-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px; /* Squircle appearance */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--glass-bg) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid var(--glass-border);
+  transition: transform 0.2s cubic-bezier(0.445, 0.05, 0.55, 0.95), filter 0.2s;
+}
+
+.app-icon:active {
+  transform: scale(0.9);
+  filter: brightness(0.8);
+}
+ Wilmington
