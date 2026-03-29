@@ -23,7 +23,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Zap,
-  Globe
+  Globe,
+  Sparkles
 } from 'lucide-react'
 import './index.css'
 import Config from './components/Config'
