@@ -171,51 +171,53 @@ function App() {
       default:
         return (
           <div className="dashboard-view" style={{ animation: 'fadeIn 0.5s ease', padding: '0 20px' }}>
-            <header className="portal-header" style={{ marginBottom: '60px', textAlign: 'center' }}>
-              <div className="portal-title">
-                <h1 className="display" style={{ fontSize: '48px', marginBottom: '16px', letterSpacing: '-0.02em' }}>{t.portal}</h1>
-                <p style={{ fontSize: '18px', opacity: 0.7, maxWidth: '600px', margin: '0 auto' }}>{t.welcome}</p>
-              </div>
-            </header>
-
-            <div className="dashboard-grid" style={{ maxWidth: '900px', margin: '0 auto' }}>
-              <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%)', border: '1px solid var(--glass-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ padding: '12px', background: '#4ade80', borderRadius: '15px', color: 'black' }}><Zap size={24} /></div>
-                    <div>
-                      <h2 style={{ fontSize: '24px', fontWeight: '800' }}>{t.upcoming}</h2>
-                      <p style={{ color: '#4ade80', fontWeight: '700', fontSize: '14px' }}>STATUS: ONLINE</p>
-                    </div>
-                  </div>
+            <div className="dashboard-content" style={{ animation: 'fadeIn 0.5s ease', padding: '0 20px', maxWidth: '800px', margin: '0 auto' }}>
+              <header className="portal-header" style={{ marginBottom: '40px', textAlign: 'center' }}>
+                <div className="portal-title">
+                  <h1 className="display" style={{ fontSize: '48px', marginBottom: '16px', letterSpacing: '-0.02em' }}>{t.portal}</h1>
+                  <p style={{ fontSize: '18px', opacity: 0.7, maxWidth: '600px', margin: '0 auto' }}>{t.welcome}</p>
                 </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px' }}>
-                    <p style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '10px' }}>Workers Active</p>
-                    <div style={{ fontSize: '28px', fontWeight: '900' }}>14</div>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px' }}>
-                    <p style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '10px' }}>Today's Tasks</p>
-                    <div style={{ fontSize: '28px', fontWeight: '900' }}>High</div>
-                  </div>
-                </div>
+              </header>
 
-                <button 
-                  onClick={() => navigateTo('home')}
-                  style={{ 
-                    marginTop: '40px', width: '100%', padding: '20px', 
-                    borderRadius: '20px', background: 'var(--primary)', 
-                    color: 'var(--bg)', fontWeights: '900', fontSize: '18px',
-                    border: 'none', cursor: 'pointer', display: 'flex', 
-                    alignItems: 'center', justifyContent: 'center', gap: '12px',
-                    transition: '0.3s'
-                  }}
-                  className="enter-btn"
-                >
-                  <span>{t.enter}</span>
-                  <ArrowRight size={20} />
-                </button>
+              <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%)', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                  <div style={{ marginBottom: '30px' }}>
+                     <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', width: 'fit-content', margin: '0 auto 25px' }}>
+                        <Sparkles size={42} color="var(--primary)" />
+                     </div>
+                     <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '15px' }}>{lang === 'es' ? 'Bienvenido al Portal' : 'Welcome to the Portal'}</h2>
+                     <p style={{ opacity: 0.8, lineHeight: '1.6', fontSize: '16px', maxWidth: '400px', margin: '0 auto' }}>
+                        {lang === 'es' 
+                          ? 'Accede a tus recursos y herramientas de trabajo de forma rápida y segura desde este panel central.'
+                          : 'Quickly and securely access your work resources and tools from this central dashboard.'}
+                     </p>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
+                     <div style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p style={{ fontSize: '11px', fontWeight: '800', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Sessions</p>
+                        <div style={{ fontSize: '22px', fontWeight: '800' }}>Active</div>
+                     </div>
+                     <div style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p style={{ fontSize: '11px', fontWeight: '800', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Privacy</p>
+                        <div style={{ fontSize: '22px', fontWeight: '800' }}>L3-AES</div>
+                     </div>
+                  </div>
+
+                  <button 
+                    onClick={() => navigateTo('home')}
+                    style={{ 
+                      width: '100%', padding: '22px', 
+                      borderRadius: '24px', background: 'var(--primary)', 
+                      color: 'var(--bg)', fontWeight: '900', fontSize: '18px',
+                      border: 'none', cursor: 'pointer', display: 'flex', 
+                      alignItems: 'center', justifyContent: 'center', gap: '12px',
+                      transition: '0.3s'
+                    }}
+                    className="enter-btn"
+                  >
+                    <span>{t.enter}</span>
+                    <ArrowRight size={20} />
+                  </button>
               </div>
 
               {/* Quick Contact Card */}
@@ -223,8 +225,8 @@ function App() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                   <MessageSquare size={32} />
                   <div>
-                    <h3 style={{ fontWeight: '800', fontSize: '20px' }}>WhatsApp Group</h3>
-                    <p style={{ opacity: 0.8, fontSize: '14px' }}>Acceso directo a soporte editorial</p>
+                    <h3 style={{ fontWeight: '800', fontSize: '20px' }}>{lang === 'es' ? 'Grupo WhatsApp' : 'WhatsApp Group'}</h3>
+                    <p style={{ opacity: 0.8, fontSize: '14px' }}>{lang === 'es' ? 'Soporte editorial directo' : 'Direct editorial support'}</p>
                   </div>
                 </div>
               </div>
@@ -240,6 +242,11 @@ function App() {
       opacity: isTransitioning ? 0 : 1,
       transition: 'opacity 0.2s ease'
     }}>
+      
+      {/* Premium Mobile Header for iOS / PWA */}
+      <header className="mobile-only-header">
+        <img src={currentLogo} alt="Logo" style={{ height: '32px', objectFit: 'contain' }} />
+      </header>
 
       {/* Sidebar for Desktop */}
       <aside className="sidebar">
