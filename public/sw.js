@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hfworkers-v2';
+const CACHE_NAME = 'hfworkers-v3';
 const urlsToCache = [
   '/',
   '/index.html',
